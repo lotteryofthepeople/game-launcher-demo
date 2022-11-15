@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game interface</title>
+    <script src="lottery-connect.js"></script>
+</head>
+<body style="background: aquamarine">
+  Game content: <pre id="game_content"></pre>
+  <button type="button" onclick="buyTicket()">Play Again</button>
+  <button type="button" onclick="claimPrize()">Claim Prize</button>
+
+  <script>
+      const lottery = window.lotteryApp;
+      let game_state = {};
+
+      /** Prepare the UI with the new game state */
+      lottery.registerPlayHandler((ticket) => {
+          game_state = ticket;
+          document.getElementById('game_content').textContent = JSON.stringify(game_state, null, "  ");
+      });
+
+      /** Initiate the purchase of a new ticket for this game */
+      const buyTicket = () => {
+          lottery.buyTicket(game_state?.gameId);
+      }
+
+      /** Initiate the claiming of the prize for a winning ticket */
+      const claimPrize = () => {
+          lottery.claimPrize(game_state?.gameId, game_state?.ticketId);
+      }
+  </script>
+</body>
+</html>
