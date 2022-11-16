@@ -14,11 +14,14 @@
       const lottery = window.lotteryApp;
       let game_state = {};
 
-      /** Prepare the UI with the new game state */
-      lottery.registerPlayHandler((ticket) => {
+      /** Set the game ticket handler method */
+      lottery.onPlay = (ticket) => {
           game_state = ticket;
           document.getElementById('game_content').textContent = JSON.stringify(game_state, null, "  ");
-      });
+      };
+
+      /** Signal that the game is ready for receiving tickets */
+      lottery.readyToPlay();
 
       /** Initiate the purchase of a new ticket for this game */
       const buyTicket = () => {

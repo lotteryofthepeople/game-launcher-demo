@@ -3,7 +3,6 @@ class LotteryConnect {
         const game_url = window.location.protocol !== 'file:' ? window.location.protocol + '//' + window.location.host : null;
 
         this.has_launcher = false;
-        this.handlePlay = (ticket) => {}
 
         window.onmessage = (e) => {
             if (game_url && e.origin !== game_url) // basic security
@@ -12,20 +11,24 @@ class LotteryConnect {
             if (e.data?.action === 'play') {
                 console.log('game', 'play', e.data?.ticket);
                 this.has_launcher = true;
-                this.handlePlay(e.data?.ticket)
+                this.onPlay(e.data?.ticket)
             } else {
                 console.warn('game', 'Unrecognized message', e.data);
             }
         };
     }
 
+    /** Set the onPlay method to receive game tickets */
+    onPlay = (ticket) => {
+        throw new Error('You have to set onPlay to receive game tickets')
+    };
+
     /**
      *  Registers the play handler function which prepares the UI with the new game state
      *  Calling this function signals that the UI is ready and tickets can be received.
      */
-    registerPlayHandler = (fnPlay) => {
+    readyToPlay = () => {
         console.log('game', 'readyToPlay');
-        this.handlePlay = fnPlay;
         window.top.postMessage({action: 'readyToPlay'}, '*');
     }
 
