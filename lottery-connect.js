@@ -57,7 +57,8 @@ class LotteryConnect {
             outcomes: [500, 979, 999, 1000],
             payouts: [0, 1, 3, 75],
             rng: Math.round(Math.random() * 1000),
-            played: false
+            played: false,
+            balance: 100
         };
     }
 }
