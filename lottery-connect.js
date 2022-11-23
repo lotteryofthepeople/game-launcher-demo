@@ -39,7 +39,7 @@ class LotteryConnect {
             window.top.postMessage({action: 'buyTicket', gameId}, '*');
         } else {
             console.warn('game', 'buyTicketMock', gameId);
-            this.handlePlay(this.createMockTicket(gameId));
+            this.onPlay(this.createMockTicket(gameId));
         }
     }
 
@@ -63,7 +63,7 @@ class LotteryConnect {
             outcomes: [500, 979, 999, 1000],
             payouts: [0, 1, 3, 75],
             rng: Math.round(Math.random() * 1000),
-            played: false,
+            saveData: {},
             balance: 100
         };
     }

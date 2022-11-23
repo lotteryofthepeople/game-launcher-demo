@@ -9,6 +9,7 @@
   Game content: <pre id="game_content"></pre>
   <button type="button" onclick="buyTicket()">Play Again</button>
   <button type="button" onclick="claimPrize()">Claim Prize</button>
+  <button type="button" onclick="saveGame({info: 'someSaveData'})">Save Game</button>
 
   <script>
       const lottery = window.lotteryApp;
@@ -31,6 +32,11 @@
       /** Initiate the claiming of the prize for a winning ticket */
       const claimPrize = () => {
           lottery.claimPrize(game_state?.gameId, game_state?.ticketId);
+      }
+
+      /** Initiate the claiming of the prize for a winning ticket */
+      const saveGame = (data) => {
+          lottery.saveGameProgress(game_state?.gameId, game_state?.ticketId, data);
       }
   </script>
 </body>

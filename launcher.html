@@ -41,6 +41,11 @@
             console.log('launcher', `claimPrize(gameId: ${gameId}, ticketId: ${ticketId})`);
         };
 
+        /** Save the game and ticket specific progress information */
+        const saveGameProgress = (gameId, ticketId, data) => {
+            console.log('launcher', `saveGameProgress(gameId: ${gameId}, ticketId: ${ticketId}, data: ${data})`);
+        };
+
         /** Send game state 'ticket' to the user interface in an async message */
         const sendTicketToGameUi = (ticket) => {
             const game = document.getElementsByName("game_content")[0];
@@ -57,6 +62,8 @@
                 sendTicketToGameUi(ticket);
             } else if (e.data?.action === 'claimPrize') {
                 claimPrize(e.data?.gameId, e.data?.ticketId);
+            } else if (e.data?.action === 'saveGameProgress') {
+                saveGameProgress(e.data?.gameId, e.data?.ticketId, e.data?.data);
             } else if (e.data?.action === 'readyToPlay') {
                 readyToPlay(GAME_ID);
             } else {
@@ -76,7 +83,6 @@
 Embedded Game UI:
 <div>
     <iframe src="game_if.html" name="game_content" title="Cherry Garden"></iframe>
-<!--    <iframe src="index.html" name="game_content" title="Cherry Garden"></iframe>-->
 </div>
 </body>
 </html>
