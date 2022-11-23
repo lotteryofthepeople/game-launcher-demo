@@ -49,6 +49,12 @@ class LotteryConnect {
         window.top.postMessage({action: 'claimPrize', gameId, ticketId}, '*');
     }
 
+    /** Save Game progress for a ticket */
+    saveGameProgress = (gameId, ticketId, data) => {
+        console.log('game', 'saveGameProgress', gameId, ticketId, data);
+        window.top.postMessage({action: 'saveGameProgress', gameId, ticketId, data}, '*');
+    }
+
     createMockTicket = (gameId) => {
         return {
             gameId: gameId,
