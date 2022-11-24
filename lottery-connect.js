@@ -12,7 +12,7 @@ class LotteryConnect {
                 console.log('game', 'play', e.data?.ticket);
                 this.has_launcher = true;
                 this.onPlay(e.data?.ticket)
-            } if (e.data?.action === 'balanceChange') {
+            } else if (e.data?.action === 'balanceChange') {
                 console.log('game', 'balanceChange', e.data?.balance);
                 this.has_launcher = true;
                 this.onBalanceChange(e.data?.balance);

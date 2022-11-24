@@ -6,6 +6,7 @@
     <script src="lottery-connect.js"></script>
 </head>
 <body style="background: aquamarine">
+  <p>Player Balance: <span id="balance"></span></p>
   Game content: <pre id="game_content"></pre>
   <button type="button" onclick="buyTicket()">Play Again</button>
   <button type="button" onclick="claimPrize()">Claim Prize</button>
@@ -18,7 +19,13 @@
       /** Set the game ticket handler method */
       lottery.onPlay = (ticket) => {
           game_state = ticket;
-          document.getElementById('game_content').textContent = JSON.stringify(game_state, null, "  ");
+          document.getElementById('balance').textContent = `$${ticket.balance}`;
+          document.getElementById('game_content').textContent = JSON.stringify(ticket, null, "  ");
+      };
+
+      /** Update player balance */
+      lottery.onBalanceChange = (balance) => {
+          document.getElementById('balance').textContent = `$${balance}`;
       };
 
       /** Signal that the game is ready for receiving tickets */
