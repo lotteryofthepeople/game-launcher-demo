@@ -12,6 +12,10 @@ class LotteryConnect {
                 console.log('game', 'play', e.data?.ticket);
                 this.has_launcher = true;
                 this.onPlay(e.data?.ticket)
+            } if (e.data?.action === 'balanceChange') {
+                console.log('game', 'balanceChange', e.data?.balance);
+                this.has_launcher = true;
+                this.onBalanceChange(e.data?.balance);
             } else {
                 console.warn('game', 'Unrecognized message', e.data);
             }
@@ -53,6 +57,11 @@ class LotteryConnect {
     saveGameProgress = (gameId, ticketId, data) => {
         console.log('game', 'saveGameProgress', gameId, ticketId, data);
         window.top.postMessage({action: 'saveGameProgress', gameId, ticketId, data}, '*');
+    }
+
+    /** Save Game progress for a ticket */
+    onBalanceChange = (balance) => {
+        // optional balance change handler
     }
 
     createMockTicket = (gameId) => {
