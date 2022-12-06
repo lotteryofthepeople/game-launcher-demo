@@ -1,13 +1,8 @@
 class LotteryConnect {
     constructor() {
-        const game_url = window.location.protocol !== 'file:' ? window.location.protocol + '//' + window.location.host : null;
-
         this.has_launcher = false;
 
         window.onmessage = (e) => {
-            if (game_url && e.origin !== game_url) // basic security
-                return;
-
             if (e.data?.action === 'play') {
                 console.log('game', 'play', e.data?.ticket);
                 this.has_launcher = true;

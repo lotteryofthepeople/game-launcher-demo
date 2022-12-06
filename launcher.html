@@ -88,8 +88,6 @@
 
         const launcher_url = window.location.protocol !== 'file:' ? window.location.protocol + '//' + window.location.host : null;
         window.onmessage = function (e) {
-            if (launcher_url && e.origin !== launcher_url) // basic security
-                return;
             if (e.data?.action === 'buyTicket') {
                 const ticket = buyTicket(e.data?.gameId)
 
