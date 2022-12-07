@@ -19,7 +19,7 @@
         let playerBalance = 100;
         const tickets = {};
         const GAME_ID = 1;
-        const TICKET_COST = 1;
+
 
         /** Purchase a new blockchain ticket for the gameId */
         const buyTicket = (gameId) => {
@@ -86,7 +86,6 @@
             game.contentWindow.postMessage({action: 'balanceChange', balance}, '*');
         }
 
-        const launcher_url = window.location.protocol !== 'file:' ? window.location.protocol + '//' + window.location.host : null;
         window.onmessage = function (e) {
             if (e.data?.action === 'buyTicket') {
                 const ticket = buyTicket(e.data?.gameId)
