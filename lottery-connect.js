@@ -66,7 +66,7 @@ class LotteryConnect {
             ticketCost: 1,
             outcomes: [500, 979, 999, 1000],
             payouts: [0, 1, 3, 75],
-            rng: Math.round(Math.random() * 1000),
+            rng: Math.round(Math.random() * 999) + 1,
             saveData: {},
             balance: 100
         };

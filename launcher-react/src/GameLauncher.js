@@ -22,7 +22,7 @@ export default ({gameId}) => {
             ticketCost: TICKET_COST,
             outcomes: [500, 979, 999, 1000],
             payouts: [0, 1, 3, 75],
-            rng: Math.round(Math.random() * 1000),
+            rng: Math.round(Math.random() * 999) + 1,
             played: false,
             balance: playerBalance - TICKET_COST
         };
@@ -46,8 +46,8 @@ export default ({gameId}) => {
 
     const ticketValue = (ticket) => {
         const resultInd = ticket.outcomes.findIndex((value) => { // 0, 1, 2, 3
-            return ticket.rng < value
-        })
+            return ticket.rng <= value
+        });
         return ticket.payouts[resultInd];
     }
 
@@ -59,8 +59,10 @@ export default ({gameId}) => {
         if (ticket['claimed'])
             return;
 
+        const value = ticketValue(ticket);
+        if (value)
+            addToPlayerBalance(value);
         ticket['claimed'] = true
-        addToPlayerBalance(ticketValue(ticket));
     };
 
     /** Save the game and ticket specific progress information */
