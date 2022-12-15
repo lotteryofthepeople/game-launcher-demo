@@ -6,12 +6,12 @@ class LotteryConnect {
             if (e.data?.action === 'play') {
                 this.has_launcher = true;
 
-                if(!this.checkTicket(e.data?.ticket)) {
+                if(!this.checkTicket(e.data?.ticket, true)) {
                     console.error('game', 'play - invalid ticket', e.data?.ticket);
-                    return;
+                } else {
+                    console.log('game', 'play', e.data?.ticket);
                 }
 
-                console.log('game', 'play', e.data?.ticket);
                 this.onPlay(e.data?.ticket)
             } else if (e.data?.action === 'balanceChange') {
                 console.log('game', 'balanceChange', e.data?.balance);
@@ -78,7 +78,7 @@ class LotteryConnect {
         };
     }
 
-    checkTicket = (ticket) => {
+    checkTicket = (ticket, log = false) => {
         const conditions = [
             [() => ticket !== undefined, 'ticket is undefined'],
             [() => ticket?.gameId !== undefined, 'ticket.gameId is undefined'],
@@ -97,7 +97,7 @@ class LotteryConnect {
 
         return conditions.every(([condition, msg]) => {
             const result = condition();
-            if (!condition())
+            if (!condition() && log)
                 console.error(msg);
             return result
         });
