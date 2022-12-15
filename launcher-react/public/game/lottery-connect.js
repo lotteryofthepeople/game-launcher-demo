@@ -4,8 +4,14 @@ class LotteryConnect {
 
         window.onmessage = (e) => {
             if (e.data?.action === 'play') {
-                console.log('game', 'play', e.data?.ticket);
                 this.has_launcher = true;
+
+                if(!this.checkTicket(e.data?.ticket)) {
+                    console.error('game', 'play - invalid ticket', e.data?.ticket);
+                    return;
+                }
+
+                console.log('game', 'play', e.data?.ticket);
                 this.onPlay(e.data?.ticket)
             } else if (e.data?.action === 'balanceChange') {
                 console.log('game', 'balanceChange', e.data?.balance);
@@ -70,6 +76,31 @@ class LotteryConnect {
             saveData: {},
             balance: 100
         };
+    }
+
+    checkTicket = (ticket) => {
+        const conditions = [
+            [() => ticket !== undefined, 'ticket is undefined'],
+            [() => ticket?.gameId !== undefined, 'ticket.gameId is undefined'],
+            [() => ticket?.ticketId !== undefined, 'ticket.ticketId is undefined'],
+            [() => ticket?.outcomes !== undefined, 'ticket.outcomes is undefined'],
+            [() => ticket?.payouts !== undefined, 'ticket.payouts is undefined'],
+            [() => ticket?.rng !== undefined, 'ticket.rng is undefined'],
+            [() => ticket?.outcomes?.length === ticket?.payouts?.length,
+                `ticket.outcomes.length: ${ticket?.outcomes?.length} != ticket.payouts.length: ${ticket?.payouts?.length}`],
+            [() => ticket?.payouts?.every((p) => p >= 0), `ticket.payouts should be all >= 0 ${ticket?.payouts}`],
+            [() => ticket?.outcomes?.every((value, i, outcomes) =>
+                i >= outcomes.length - 1 || value < outcomes[i + 1]), `ticket.outcomes should be monotonically increasing ${ticket?.outcomes}`],
+            [() => 1 <= ticket?.rng && ticket?.rng <= ticket?.outcomes?.at(ticket?.outcomes?.length - 1),
+                `ticket.rng: ${ticket?.rng} should be between 1 and max(outcomes): ${ticket?.outcomes?.at(ticket?.outcomes?.length - 1)} inclusive`]
+        ];
+
+        return conditions.every(([condition, msg]) => {
+            const result = condition();
+            if (!condition())
+                console.error(msg);
+            return result
+        });
     }
 }
 
