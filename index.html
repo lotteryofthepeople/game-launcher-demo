@@ -31,12 +31,12 @@
       let game_state = {};
 
       function renderPayoutsAndOutcomes(payouts, outcomes) {
-          const maxWidth = Math.max(
-              payouts.map((v) => '' + v).reduce((a, b) => a.length > b.length ? a.length : b.length),
-              outcomes.map((v) => '' + v).reduce((a, b) => a.length > b.length ? a.length : b.length))
+          const p_w = payouts?.map((v) => '' + v)?.reduce((a, b) => a.length > b.length ? a.length : b.length)
+          const o_w = outcomes?.map((v) => '' + v)?.reduce((a, b) => a.length > b.length ? a.length : b.length)
+          const maxWidth = Math.max(p_w ?? 0, o_w ?? 0)
 
-          const payouts_str = '[' + payouts.map((v) => ('' + v).padStart(maxWidth, ' ')) + ']'
-          const outcomes_str = '[' + outcomes.map((v) => ('' + v).padStart(maxWidth, ' ')) + ']'
+          const payouts_str = payouts ? '[' + payouts.map((v) => ('' + v).padStart(maxWidth, ' ')) + ']' : 'null'
+          const outcomes_str = outcomes ? '[' + outcomes.map((v) => ('' + v).padStart(maxWidth, ' ')) + ']' : 'null'
 
           return {payouts_str, outcomes_str}
       }
