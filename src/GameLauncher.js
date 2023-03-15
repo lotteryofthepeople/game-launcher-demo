@@ -1,5 +1,5 @@
 import './GameLauncher.css'
-import {useCallback, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 
 const TICKET_COST = 1;
 
@@ -8,6 +8,7 @@ export default ({gameId}) => {
     const [tickets, setTickets] = useState({})
 
     const iframeRef = useRef(null);
+    const [height, setHeight] = useState("800px");
 
     /** Purchase a new blockchain ticket for the gameId */
     const buyTicket = (gameId) => {
@@ -105,12 +106,36 @@ export default ({gameId}) => {
         }
     };
 
+    const resizeIframe = useCallback((e) => {
+        const gameElement = iframeRef.current.contentWindow.document.body
+        const newHeight = gameElement.scrollHeight
+            + parseInt(getComputedStyle(gameElement).marginTop)
+            + parseInt(getComputedStyle(gameElement).marginBottom)
+        console.log(`iframe loaded height: ${newHeight}`, e?.type)
+        setHeight(newHeight + "px");
+    }, [iframeRef])
+
+    useEffect(() => {
+        iframeRef.current.contentWindow.onresize = resizeIframe
+    }, [iframeRef, resizeIframe])
+
     return (
         <div>
             <iframe
-                src="game/index.html"
                 ref={iframeRef}
-                title="Cherry Garden"></iframe>
+                onLoad={resizeIframe}
+                id="gameFrame"
+                src="game/index.html"
+                title="Game"
+                height={height}
+                scrolling="no"
+                frameBorder="0"
+                style={{
+                    width: "100%",
+                    overflow: "hidden",
+                    border: "none"
+                }}
+            ></iframe>
         </div>
     )
 }
