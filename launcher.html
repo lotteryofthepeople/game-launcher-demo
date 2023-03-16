@@ -16,19 +16,21 @@
         }
     </style>
     <script>
-        let playerBalance = 100;
-        const tickets = {};
-        const GAME_ID = 1;
-        const TICKET_COST = 1;
+        let playerBalance = 100
+        let remainingTickets = 50
+        const tickets = {}
+        const GAME_ID = 1
+        const TICKET_COST = 1.01
 
         /** Purchase a new blockchain ticket for the gameId */
         const buyTicket = (gameId) => {
-            console.log('launcher', `buyTicket(gameId: ${gameId})`);
-            return mockTicket(gameId);
+            console.log('launcher', `buyTicket(gameId: ${gameId})`)
+            return mockTicket(gameId)
         }
 
         const mockTicket = (gameId) => {
-            playerBalance -= TICKET_COST;
+            playerBalance = roundHalfEven(playerBalance - TICKET_COST)
+            remainingTickets -= 1
             const ticket = {
                 gameId: gameId,
                 ticketId: Math.round(Math.random() * 1000000),
@@ -37,79 +39,80 @@
                 payouts:  [0, 1, 3, 75],
                 rng: Math.round(Math.random() * 999) + 1,
                 played: false,
-                balance: playerBalance
-            };
-            tickets[ticket.ticketId] = ticket;
-            return ticket;
+                balance: playerBalance,
+                remainingTickets: remainingTickets
+            }
+            tickets[ticket.ticketId] = ticket
+            return ticket
         }
 
         const addToPlayerBalance = (change) => {
-            playerBalance += change;
-            console.log('launcher', `balanceChange(${playerBalance})`);
+            playerBalance = roundHalfEven(playerBalance + change)
+            console.log('launcher', `balanceChange(${playerBalance})`)
 
-            sendBalanceToGameUi(playerBalance);
+            sendBalanceToGameUi(playerBalance)
         }
 
         const ticketValue = (ticket) => {
             const resultInd = ticket.outcomes.findIndex((value) => { // 0, 1, 2, 3
                 return ticket.rng <= value
-            });
-            return ticket.payouts[resultInd];
+            })
+            return ticket.payouts[resultInd]
         }
 
         /** Claim the prize for a game on the blockchain */
         const claimPrize = (gameId, ticketId) => {
-            console.log('launcher', `claimPrize(gameId: ${gameId}, ticketId: ${ticketId})`);
+            console.log('launcher', `claimPrize(gameId: ${gameId}, ticketId: ${ticketId})`)
 
-            const ticket = tickets[ticketId];
+            const ticket = tickets[ticketId]
             if (ticket['claimed'])
-                return;
+                return
 
-            const value = ticketValue(ticket);
+            const value = ticketValue(ticket)
             if (value)
-                addToPlayerBalance(value);
+                addToPlayerBalance(value)
             ticket['claimed'] = true
-        };
+        }
 
         /** Save the game and ticket specific progress information */
         const saveGameProgress = (gameId, ticketId, data) => {
-            console.log('launcher', `saveGameProgress(gameId: ${gameId}, ticketId: ${ticketId}, data: ${data})`);
-        };
+            console.log('launcher', `saveGameProgress(gameId: ${gameId}, ticketId: ${ticketId}, data: ${data})`)
+        }
 
         /** Send game state 'ticket' to the user interface in an async message */
         const sendTicketToGameUi = (ticket) => {
-            const game = document.getElementById("game_content");
-            game.contentWindow.postMessage({action: 'play', ticket}, '*');
+            const game = document.getElementById("game_content")
+            game.contentWindow.postMessage({action: 'play', ticket}, '*')
         }
 
         /** Send updated balance the user interface in an async message */
         const sendBalanceToGameUi = (balance) => {
-            const game = document.getElementById("game_content");
-            game.contentWindow.postMessage({action: 'balanceChange', balance}, '*');
+            const game = document.getElementById("game_content")
+            game.contentWindow.postMessage({action: 'balanceChange', balance}, '*')
         }
 
         window.onmessage = function (e) {
             if (e.data?.action === 'buyTicket') {
                 const ticket = buyTicket(e.data?.gameId)
 
-                sendTicketToGameUi(ticket);
+                sendTicketToGameUi(ticket)
             } else if (e.data?.action === 'claimPrize') {
-                claimPrize(e.data?.gameId, e.data?.ticketId);
+                claimPrize(e.data?.gameId, e.data?.ticketId)
             } else if (e.data?.action === 'saveGameProgress') {
-                saveGameProgress(e.data?.gameId, e.data?.ticketId, e.data?.data);
+                saveGameProgress(e.data?.gameId, e.data?.ticketId, e.data?.data)
             } else if (e.data?.action === 'readyToPlay') {
-                readyToPlay(GAME_ID);
+                readyToPlay(GAME_ID)
             } else {
-                console.warn('launcher', 'Unrecognized message', e.data);
+                console.warn('launcher', 'Unrecognized message', e.data)
             }
-        };
+        }
 
         const readyToPlay = (gameId) => {
-            console.log('launcher', 'readyToPlay');
+            console.log('launcher', 'readyToPlay')
 
             // generate new ticket if the clicked one is already played
-            sendTicketToGameUi(mockTicket(gameId));
-        };
+            sendTicketToGameUi(mockTicket(gameId))
+        }
 
         const resizeIframe = (e) => {
             const gameElement = document.getElementById("game_content")
@@ -119,9 +122,16 @@
             console.log(`iframe loaded height: ${newHeight}`, e?.type)
             gameElement.height = newHeight + "px"
         }
+        const registerGameSizeHandler = () => {
+            document.getElementById("game_content").contentWindow.onresize = resizeIframe
+        }
+
+        const roundHalfEven = (n) => {
+            return Math.round(n*100)/100;
+        }
     </script>
 </head>
-<body>
+<body onload="registerGameSizeHandler()">
 Embedded Game UI:
 <div>
     <iframe
