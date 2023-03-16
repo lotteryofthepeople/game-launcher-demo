@@ -78,13 +78,13 @@
 
         /** Send game state 'ticket' to the user interface in an async message */
         const sendTicketToGameUi = (ticket) => {
-            const game = document.getElementsByName("game_content")[0];
+            const game = document.getElementById("game_content");
             game.contentWindow.postMessage({action: 'play', ticket}, '*');
         }
 
         /** Send updated balance the user interface in an async message */
         const sendBalanceToGameUi = (balance) => {
-            const game = document.getElementsByName("game_content")[0];
+            const game = document.getElementById("game_content");
             game.contentWindow.postMessage({action: 'balanceChange', balance}, '*');
         }
 
@@ -110,12 +110,30 @@
             // generate new ticket if the clicked one is already played
             sendTicketToGameUi(mockTicket(gameId));
         };
+
+        const resizeIframe = (e) => {
+            const gameElement = document.getElementById("game_content")
+            const newHeight = gameElement.contentWindow.document.body.scrollHeight
+                + parseInt(getComputedStyle(gameElement).marginTop)
+                + parseInt(getComputedStyle(gameElement).marginBottom)
+            console.log(`iframe loaded height: ${newHeight}`, e?.type)
+            gameElement.height = newHeight + "px"
+        }
     </script>
 </head>
 <body>
 Embedded Game UI:
 <div>
-    <iframe src="index.html" name="game_content" title="Cherry Garden"></iframe>
+    <iframe
+            src="index.html"
+            id="game_content"
+            title="Game"
+            onload="resizeIframe(event)"
+            height="800px"
+            scrolling="no"
+            frameBorder="0"
+            style='width: 100%; overflow: hidden; border: none'
+    ></iframe>
 </div>
 </body>
 </html>
