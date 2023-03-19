@@ -1,10 +1,11 @@
 import './GameLauncher.css'
 import {useCallback, useEffect, useRef, useState} from "react";
 
-const TICKET_COST = 1;
+const TICKET_COST = 1.01;
 
 export default ({gameId}) => {
     const [playerBalance, setPlayerBalance] = useState(100)
+    const [remainingTickets, setRemainingTickets] = useState(50)
     const [tickets, setTickets] = useState({})
 
     const iframeRef = useRef(null);
@@ -25,17 +26,19 @@ export default ({gameId}) => {
             payouts: [0, 1, 3, 75],
             rng: Math.round(Math.random() * 999) + 1,
             played: false,
-            balance: playerBalance - TICKET_COST
+            balance: roundHalfEven(playerBalance - TICKET_COST),
+            remainingTickets: remainingTickets
         };
 
-        setPlayerBalance(playerBalance - TICKET_COST);
+        setPlayerBalance(roundHalfEven(playerBalance - TICKET_COST));
+        setRemainingTickets(remainingTickets - 1);
 
         const updatedTickets = {...tickets};
         updatedTickets[ticket.ticketId] = ticket;
         setTickets(updatedTickets);
 
         return ticket;
-    }, [playerBalance, tickets]);
+    }, [playerBalance, remainingTickets, tickets]);
 
     const addToPlayerBalance = useCallback((change) => {
         const newBalance = playerBalance + change;
@@ -83,13 +86,6 @@ export default ({gameId}) => {
         game.contentWindow.postMessage({action: 'balanceChange', balance}, '*');
     }
 
-    const readyToPlay = (gameId) => {
-        console.log('launcher', 'readyToPlay');
-
-        // generate new ticket if the clicked one is already played
-        sendTicketToGameUi(mockTicket(gameId));
-    };
-
     window.onmessage = function (e) {
         if (e.data?.action === 'buyTicket') {
             const ticket = buyTicket(e.data?.gameId)
@@ -106,24 +102,45 @@ export default ({gameId}) => {
         }
     };
 
-    const resizeIframe = useCallback((e) => {
-        const gameElement = iframeRef.current.contentWindow.document.body
-        const newHeight = gameElement.scrollHeight
-            + parseInt(getComputedStyle(gameElement).marginTop)
-            + parseInt(getComputedStyle(gameElement).marginBottom)
-        console.log(`iframe loaded height: ${newHeight}`, e?.type)
-        setHeight(newHeight + "px");
+    const readyToPlay = (gameId) => {
+        console.log('launcher', 'readyToPlay');
+
+        // generate new ticket if the clicked one is already played
+        sendTicketToGameUi(mockTicket(gameId));
+    };
+
+    const gameSizeChanged = useCallback(() => {
+        const gameFrame = iframeRef.current
+        const newHeight = gameFrame.contentWindow.document.body.scrollHeight
+            + parseInt(getComputedStyle(gameFrame).marginTop)
+            + parseInt(getComputedStyle(gameFrame).marginBottom)
+        gameFrame.height = newHeight + "px"
+    }, [iframeRef])
+
+    const launcherSizeChanged = useCallback(() => {
+        const gameFrame = iframeRef.current
+        gameFrame.style.aspectRatio = "" + window.innerWidth / window.innerHeight
+        gameFrame.height = ""
     }, [iframeRef])
 
     useEffect(() => {
-        iframeRef.current.contentWindow.onresize = resizeIframe
-    }, [iframeRef, resizeIframe])
+        const gameFrame = iframeRef.current
+        gameFrame.contentWindow.onresize = gameSizeChanged
+        window.onresize = launcherSizeChanged
+        return () => {
+            window.onresize = null
+        }
+    }, [iframeRef, gameSizeChanged, launcherSizeChanged])
+
+    const roundHalfEven = (n) => {
+        return Math.round(n*100)/100;
+    }
 
     return (
         <div>
             <iframe
                 ref={iframeRef}
-                onLoad={resizeIframe}
+                onLoad={launcherSizeChanged}
                 id="gameFrame"
                 src="game/index.html"
                 title="Game"

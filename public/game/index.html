@@ -4,47 +4,90 @@
     <meta charset="UTF-8">
     <title>Game interface</title>
     <script src="lottery-connect.js"></script>
+    <style>
+        body {
+            margin: 0;
+        }
+        .test {
+            /*color: bl;*/
+            border: solid darkslateblue 1px;
+            background-repeat: repeat;
+            background-size: 100%;
+            background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 240 80' xmlns='http://www.w3.org/2000/svg'><text x='40' y='35' style='font: bold 30px sans-serif;fill: wheat;'>TEST</text><text x='65' y='55' style='font: italic 40px serif;fill: aliceblue;'>LOTP!</text></svg>");
+        }
+    </style>
 </head>
-<body style="background: aquamarine">
-  <p>Player Balance: <span id="balance"></span></p>
-  Game content: <pre id="game_content"></pre>
-  <button type="button" onclick="buyTicket()">Play Again</button>
-  <button type="button" onclick="claimPrize()">Claim Prize</button>
-  <button type="button" onclick="saveGame({info: 'someSaveData'})">Save Game</button>
+<body>
 
-  <script>
-      const lottery = window.lotteryApp;
-      let game_state = {};
+<div class="test">
+    <p>Player Balance: <span id="balance" style="font-family: monospace"></span></p>
+    Game ticket: <pre id="game_content"></pre>
+    <button type="button" onclick="buyTicket()">Play Again</button>
+    <button type="button" onclick="claimPrize()">Claim Prize</button>
+    <button type="button" onclick="saveGame({info: 'someSaveData'})">Save Game</button>
+</div>
+<script>
+    const lottery = window.lotteryApp;
+    let game_state = {};
 
-      /** Set the game ticket handler method */
-      lottery.onPlay = (ticket) => {
-          game_state = ticket;
-          document.getElementById('balance').textContent = `$${ticket.balance}`;
-          document.getElementById('game_content').textContent = JSON.stringify(ticket, null, "  ");
-      };
+    function renderPayoutsAndOutcomes(payouts, outcomes) {
+        const p_w = payouts?.map((v) => '' + v)?.reduce((a, b) => a.length > b.length ? a.length : b.length)
+        const o_w = outcomes?.map((v) => '' + v)?.reduce((a, b) => a.length > b.length ? a.length : b.length)
+        const maxWidth = Math.max(p_w ?? 0, o_w ?? 0)
 
-      /** Update player balance */
-      lottery.onBalanceChange = (balance) => {
-          document.getElementById('balance').textContent = `$${balance}`;
-      };
+        const payouts_str = payouts ? '[' + payouts.map((v) => ('' + v).padStart(maxWidth, ' ')) + ']' : 'null'
+        const outcomes_str = outcomes ? '[' + outcomes.map((v) => ('' + v).padStart(maxWidth, ' ')) + ']' : 'null'
 
-      /** Signal that the game is ready for receiving tickets */
-      lottery.readyToPlay();
+        return {payouts_str, outcomes_str}
+    }
 
-      /** Initiate the purchase of a new ticket for this game */
-      const buyTicket = () => {
-          lottery.buyTicket(game_state?.gameId);
-      }
+    /** Set the game ticket handler method */
+    lottery.onPlay = (ticket) => {
+        game_state = ticket;
+        document.getElementById('balance').textContent = `$${ticket.balance}`;
 
-      /** Initiate the claiming of the prize for a winning ticket */
-      const claimPrize = () => {
-          lottery.claimPrize(game_state?.gameId, game_state?.ticketId);
-      }
+        // render ticket as text
+        const {payouts_str, outcomes_str} = renderPayoutsAndOutcomes(ticket.payouts, ticket.outcomes)
+        let str = "{\n"
+        str += `  "outcomes": ${outcomes_str},\n`;
+        str += `  "payouts":  ${payouts_str},\n`;
+        for (const key in ticket) {
+            let value = ticket[key]
+            if (value === undefined || value === null)
+                value = "null"
+            else if (typeof value === "string")
+                value = `"${value}"`
+            else if (key === "outcomes" || key === "payouts")
+                continue
+            str += `  "${key}": ${value},\n`;
+        }
+        str = str.slice(0, str.length - 2) + "\n}" // remove the last colon
 
-      /** Initiate the claiming of the prize for a winning ticket */
-      const saveGame = (data) => {
-          lottery.saveGameProgress(game_state?.gameId, game_state?.ticketId, data);
-      }
-  </script>
+        document.getElementById('game_content').textContent = str;
+    };
+
+    /** Update player balance */
+    lottery.onBalanceChange = (balance) => {
+        document.getElementById('balance').textContent = `$${balance}`;
+    };
+
+    /** Signal that the game is ready for receiving tickets */
+    lottery.readyToPlay();
+
+    /** Initiate the purchase of a new ticket for this game */
+    const buyTicket = () => {
+        lottery.buyTicket(game_state?.gameId);
+    }
+
+    /** Initiate the claiming of the prize for a winning ticket */
+    const claimPrize = () => {
+        lottery.claimPrize(game_state?.gameId, game_state?.ticketId);
+    }
+
+    /** Initiate the claiming of the prize for a winning ticket */
+    const saveGame = (data) => {
+        lottery.saveGameProgress(game_state?.gameId, game_state?.ticketId, data);
+    }
+</script>
 </body>
 </html>
