@@ -108,16 +108,26 @@
             sendTicketToGameUi(mockTicket(gameId))
         }
 
-        const resizeIframe = (e) => {
-            const gameElement = document.getElementById("game_content")
-            const newHeight = gameElement.contentWindow.document.body.scrollHeight
-                + parseInt(getComputedStyle(gameElement).marginTop)
-                + parseInt(getComputedStyle(gameElement).marginBottom)
-            console.log(`iframe loaded height: ${newHeight}`, e?.type)
-            gameElement.height = newHeight + "px"
+        const gameSizeChanged = () => {
+            const gameFrame = document.getElementById("game_content")
+            const newHeight = gameFrame.contentWindow.document.body.scrollHeight
+                + parseInt(getComputedStyle(gameFrame).marginTop)
+                + parseInt(getComputedStyle(gameFrame).marginBottom)
+            gameFrame.height = newHeight + "px"
         }
+
+        const launcherSizeChanged = () => {
+            const gameFrame = document.getElementById("game_content")
+            gameFrame.style.aspectRatio = "" + window.innerWidth / window.innerHeight
+            gameFrame.height = ""
+        }
+
         const registerGameSizeHandler = () => {
-            document.getElementById("game_content").contentWindow.onresize = resizeIframe
+            const gameFrame = document.getElementById("game_content")
+            gameFrame.contentWindow.onresize = gameSizeChanged
+            window.onresize = launcherSizeChanged
+
+            launcherSizeChanged()
         }
 
         const roundHalfEven = (n) => {
@@ -132,8 +142,6 @@ Embedded Game UI:
             src="index.html"
             id="game_content"
             title="Game"
-            onload="resizeIframe(event)"
-            height="800px"
             scrolling="no"
             frameBorder="0"
             style='width: 100%; overflow: hidden; border: none'
