@@ -47,12 +47,12 @@ class LotteryConnect {
     }
 
     /** Initiate the purchase of a new ticket for this game */
-    buyTicket = (gameId) => {
+    buyTicket = (gameId, ticketCount) => {
         if (this.has_launcher) {
-            console.log('game', 'buyTicket', gameId)
-            window.top.postMessage({action: 'buyTicket', gameId}, '*')
+            console.log('game', 'buyTicket', gameId, ticketCount)
+            window.top.postMessage({action: 'buyTicket', gameId, ticketCount}, '*')
         } else {
-            console.warn('game', 'buyTicketMock', gameId)
+            console.warn('game', 'buyTicketMock', gameId, ticketCount)
             this.onPlay(this.createMockTicket(gameId))
         }
     }

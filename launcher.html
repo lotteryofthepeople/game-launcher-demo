@@ -11,21 +11,46 @@
     </style>
     <script>
         let playerBalance = 100
-        let remainingTickets = 50
-        const tickets = {}
+        const tickets = new Map()
         const GAME_ID = 1
         const TICKET_COST = 1.01
 
         /** Purchase a new blockchain ticket for the gameId */
-        const buyTicket = (gameId) => {
-            console.log('launcher', `buyTicket(gameId: ${gameId})`)
-            return mockTicket(gameId)
+        const buyTicket = (gameId, ticketCount) => {
+            let availableTickets = collectAvailableTickets(tickets.values())
+            if (ticketCount > 0 || availableTickets.length === 0) {
+                const purchaseCount = ticketCount ?? 1
+                console.log('launcher', 'buyTicket - purchaseCount', purchaseCount)
+                addToPlayerBalance(-TICKET_COST * purchaseCount)
+                for (let i = 0; i < purchaseCount; i++) {
+                    const ticket = mockTicket(gameId)
+                    tickets.set(ticket.ticketId, ticket)
+                }
+            } else {
+                console.log('launcher', 'buyTicket - return earlier purchase')
+            }
+
+            availableTickets = collectAvailableTickets(tickets.values())
+            const ticket = {...availableTickets[0],
+                remainingTickets: availableTickets.length - 1,
+                balance: playerBalance
+            }
+
+            tickets.get(ticket.ticketId).played = true
+            return ticket
+        }
+
+        const collectAvailableTickets = (ticketList) => {
+            const availableTickets = []
+            for (const t of ticketList) {
+                if (!t.played)
+                    availableTickets.push(t)
+            }
+            return availableTickets
         }
 
         const mockTicket = (gameId) => {
-            playerBalance = roundHalfEven(playerBalance - TICKET_COST)
-            remainingTickets -= 1
-            const ticket = {
+            return {
                 gameId: gameId,
                 ticketId: Math.round(Math.random() * 1000000),
                 ticketCost: TICKET_COST,
@@ -33,11 +58,8 @@
                 payouts:  [0, 1, 3, 75],
                 rng: Math.round(Math.random() * 999) + 1,
                 played: false,
-                balance: playerBalance,
-                remainingTickets: remainingTickets
+                balance: playerBalance
             }
-            tickets[ticket.ticketId] = ticket
-            return ticket
         }
 
         const addToPlayerBalance = (change) => {
@@ -58,7 +80,7 @@
         const claimPrize = (gameId, ticketId) => {
             console.log('launcher', `claimPrize(gameId: ${gameId}, ticketId: ${ticketId})`)
 
-            const ticket = tickets[ticketId]
+            const ticket = tickets.get(ticketId)
             if (ticket['claimed'])
                 return
 
@@ -70,7 +92,7 @@
 
         /** Save the game and ticket specific progress information */
         const saveGameProgress = (gameId, ticketId, data) => {
-            console.log('launcher', `saveGameProgress(gameId: ${gameId}, ticketId: ${ticketId}, data: ${data})`)
+            console.log('launcher', 'saveGameProgress', gameId, ticketId, data)
         }
 
         /** Send game state 'ticket' to the user interface in an async message */
@@ -87,7 +109,7 @@
 
         window.onmessage = function (e) {
             if (e.data?.action === 'buyTicket') {
-                const ticket = buyTicket(e.data?.gameId)
+                const ticket = buyTicket(e.data?.gameId, e.data?.ticketCount)
 
                 sendTicketToGameUi(ticket)
             } else if (e.data?.action === 'claimPrize') {
@@ -105,7 +127,7 @@
             console.log('launcher', 'readyToPlay')
 
             // generate new ticket if the clicked one is already played
-            sendTicketToGameUi(mockTicket(gameId))
+            sendTicketToGameUi(buyTicket(gameId, 3))
         }
 
         const gameSizeChanged = () => {
