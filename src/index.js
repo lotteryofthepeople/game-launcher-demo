@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import GameLauncher from './GameLauncher';
+import {GameLauncher} from './GameLauncher';
 
 function App() {
     return (
