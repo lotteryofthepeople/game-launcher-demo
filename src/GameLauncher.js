@@ -8,7 +8,7 @@ export const GameLauncher = ({gameId}) => {
     const [tickets] = useState(new Map())
 
     const iframeRef = useRef(null);
-    const [height] = useState("800px");
+    const [height, setHeight] = useState("800px");
 
     /** Purchase a new blockchain ticket for the gameId */
     const buyTicket = (gameId, ticketCount) => {
@@ -125,38 +125,43 @@ export const GameLauncher = ({gameId}) => {
         sendTicketToGameUi(buyTicket(gameId, 3))
     };
 
-    const gameSizeChanged = useCallback(() => {
-        const gameFrame = iframeRef.current
-        const newHeight = gameFrame.contentWindow.document.body.scrollHeight
-            + parseInt(getComputedStyle(gameFrame).marginTop)
-            + parseInt(getComputedStyle(gameFrame).marginBottom)
-        gameFrame.height = newHeight + "px"
-    }, [iframeRef])
-
     const launcherSizeChanged = useCallback(() => {
         const gameFrame = iframeRef.current
         gameFrame.style.aspectRatio = "" + window.innerWidth / window.innerHeight
-        gameFrame.height = ""
+        setHeight("")
     }, [iframeRef])
 
     useEffect(() => {
-        const gameFrame = iframeRef.current
-        gameFrame.contentWindow.onresize = gameSizeChanged
         window.onresize = launcherSizeChanged
         return () => {
             window.onresize = null
         }
-    }, [iframeRef, gameSizeChanged, launcherSizeChanged])
+    }, [launcherSizeChanged])
 
     const roundHalfEven = (n) => {
         return Math.round(n*100)/100;
     }
 
+    const gameFrameOnLoad = useCallback((event) => {
+        launcherSizeChanged()
+
+        const gameContent = event.target.contentWindow.document.body
+        const resizeObserver = new ResizeObserver((entries) => {
+            const resizeObserverEntry =  entries.at(0)
+            setHeight(resizeObserverEntry.contentRect.height + "px")
+        });
+
+        resizeObserver.observe(gameContent);
+        return () => {
+            resizeObserver.disconnect();
+        }
+    }, [])
+
     return (
         <div>
             <iframe
                 ref={iframeRef}
-                onLoad={launcherSizeChanged}
+                onLoad={gameFrameOnLoad}
                 id="gameFrame"
                 src="game/index.html"
                 title="Game"
