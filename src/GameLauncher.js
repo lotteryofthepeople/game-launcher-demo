@@ -8,7 +8,7 @@ export const GameLauncher = ({gameId}) => {
     const [tickets] = useState(new Map())
 
     const iframeRef = useRef(null);
-    const [height, setHeight] = useState("800px");
+    const [gameFrameHeight, setGameFrameHeight] = useState("800px");
 
     /** Purchase a new blockchain ticket for the gameId */
     const buyTicket = (gameId, ticketCount) => {
@@ -104,6 +104,13 @@ export const GameLauncher = ({gameId}) => {
         game.contentWindow.postMessage({action: 'balanceChange', balance}, '*');
     }
 
+    const readyToPlay = (gameId) => {
+        console.log('launcher', 'readyToPlay')
+
+        // generate new ticket if the clicked one is already played
+        sendTicketToGameUi(buyTicket(gameId, 3))
+    }
+
     window.onmessage = function (e) {
         if (e.data?.action === 'buyTicket') {
             const ticket = buyTicket(e.data?.gameId, e.data?.ticketCount)
@@ -115,21 +122,21 @@ export const GameLauncher = ({gameId}) => {
             saveGameProgress(e.data?.gameId, e.data?.ticketId, e.data?.data)
         } else if (e.data?.action === 'readyToPlay') {
             readyToPlay(gameId)
+        } else if (e.data?.action === 'requestResize') {
+            requestResize(e.data?.height)
         }
     }
 
-    const readyToPlay = (gameId) => {
-        console.log('launcher', 'readyToPlay')
-
-        // generate new ticket if the clicked one is already played
-        sendTicketToGameUi(buyTicket(gameId, 3))
-    };
+    const requestResize = (newHeight) => {
+        console.log('launcher', 'requestResize', newHeight)
+        setGameFrameHeight(newHeight + "px")
+    }
 
     const launcherSizeChanged = useCallback(() => {
         const gameFrame = iframeRef.current
         gameFrame.style.aspectRatio = "" + window.innerWidth / window.innerHeight
-        setHeight("")
-    }, [iframeRef])
+        setGameFrameHeight("")
+    }, [iframeRef, setGameFrameHeight])
 
     useEffect(() => {
         window.onresize = launcherSizeChanged
@@ -142,30 +149,14 @@ export const GameLauncher = ({gameId}) => {
         return Math.round(n*100)/100;
     }
 
-    const gameFrameOnLoad = useCallback((event) => {
-        launcherSizeChanged()
-
-        const gameContent = event.target.contentWindow.document.body
-        const resizeObserver = new ResizeObserver((entries) => {
-            const resizeObserverEntry =  entries.at(0)
-            setHeight(resizeObserverEntry.contentRect.height + "px")
-        });
-
-        resizeObserver.observe(gameContent);
-        return () => {
-            resizeObserver.disconnect();
-        }
-    }, [])
-
     return (
         <div>
             <iframe
-                ref={iframeRef}
-                onLoad={gameFrameOnLoad}
-                id="gameFrame"
                 src="game/index.html"
-                title="Game"
-                height={height}
+                ref={iframeRef}
+                onLoad={launcherSizeChanged}
+                height={gameFrameHeight}
+                title="Game UI"
                 scrolling="no"
                 frameBorder="0"
                 style={{

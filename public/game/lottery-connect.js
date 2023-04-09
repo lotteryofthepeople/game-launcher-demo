@@ -28,6 +28,18 @@ class LotteryConnect {
                 this.onBalanceChange(e.data?.balance)
             }
         }
+
+        window.onload = () => {
+            const resizeObserver = new ResizeObserver((entries) => {
+                const resizeObserverEntry =  entries.at(0)
+                this.requestResize(Math.ceil(resizeObserverEntry.contentRect.height))
+            })
+
+            resizeObserver.observe(document.body);
+            window.onbeforeunload = () => {
+                resizeObserver.disconnect()
+            }
+        }
     }
 
     /** Set the onPlay method to receive game tickets */
@@ -65,6 +77,11 @@ class LotteryConnect {
     saveGameProgress = (gameId, ticketId, data) => {
         console.log('game', 'saveGameProgress', gameId, ticketId, data)
         window.top.postMessage({action: 'saveGameProgress', gameId, ticketId, data}, '*')
+    }
+
+    requestResize = (height) => {
+        console.log('game', 'requestResize', height)
+        window.top.postMessage({action: 'requestResize', height}, '*')
     }
 
     /** Optional balance change handler */
