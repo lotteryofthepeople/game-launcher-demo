@@ -107,6 +107,13 @@
             game.contentWindow.postMessage({action: 'balanceChange', balance}, '*')
         }
 
+        const readyToPlay = (gameId) => {
+            console.log('launcher', 'readyToPlay')
+
+            // generate new ticket if the clicked one is already played
+            sendTicketToGameUi(buyTicket(gameId, 3))
+        }
+
         window.onmessage = function (e) {
             if (e.data?.action === 'buyTicket') {
                 const ticket = buyTicket(e.data?.gameId, e.data?.ticketCount)
@@ -118,23 +125,14 @@
                 saveGameProgress(e.data?.gameId, e.data?.ticketId, e.data?.data)
             } else if (e.data?.action === 'readyToPlay') {
                 readyToPlay(GAME_ID)
-            } else {
-                console.warn('launcher', 'Unrecognized message', e.data)
+            } else if (e.data?.action === 'requestResize') {
+                requestResize(e.data?.height)
             }
         }
 
-        const readyToPlay = (gameId) => {
-            console.log('launcher', 'readyToPlay')
-
-            // generate new ticket if the clicked one is already played
-            sendTicketToGameUi(buyTicket(gameId, 3))
-        }
-
-        const gameSizeChanged = () => {
+        const requestResize = (newHeight) => {
+            console.log('launcher', 'requestResize', newHeight)
             const gameFrame = document.getElementById("game_content")
-            const newHeight = gameFrame.contentWindow.document.body.scrollHeight
-                + parseInt(getComputedStyle(gameFrame).marginTop)
-                + parseInt(getComputedStyle(gameFrame).marginBottom)
             gameFrame.height = newHeight + "px"
         }
 
@@ -145,8 +143,6 @@
         }
 
         const registerGameSizeHandler = () => {
-            const gameFrame = document.getElementById("game_content")
-            gameFrame.contentWindow.onresize = gameSizeChanged
             window.onresize = launcherSizeChanged
 
             launcherSizeChanged()
