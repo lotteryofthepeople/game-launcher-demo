@@ -29,17 +29,17 @@ class LotteryConnect {
             }
         }
 
-        window.onload = () => {
+        addEventListener("load", (event) => {
             const resizeObserver = new ResizeObserver((entries) => {
                 const resizeObserverEntry =  entries.at(0)
                 this.requestResize(Math.ceil(resizeObserverEntry.contentRect.height))
             })
 
             resizeObserver.observe(document.body);
-            window.onbeforeunload = () => {
+            addEventListener("beforeunload", (event) => {
                 resizeObserver.disconnect()
-            }
-        }
+            })
+        })
     }
 
     /** Set the onPlay method to receive game tickets */
